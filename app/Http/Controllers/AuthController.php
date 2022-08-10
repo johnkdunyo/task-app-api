@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 
 
 use Illuminate\Support\Facades\Validator;
+use PhpParser\Node\Stmt\TryCatch;
 
 class AuthController extends Controller
 {
@@ -142,6 +143,37 @@ class AuthController extends Controller
         }
 
               
+    }
+
+
+
+    // reset password
+    public function resetPassword(Type $var = null)
+    {
+        try {
+            //code...
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                "status"=>"fail",
+                "message"=>$th->getMessage()
+            ], 500);
+        }
+    }
+
+
+    // verify email
+    public function verifyEmail(){
+        
+        try {
+            //code...
+        } catch (\Throwable $th) {
+            
+            return response()->json([
+                "status"=>"fail",
+                "message"=>$th->getMessage()
+            ], 500);
+        }
     }
 
 }

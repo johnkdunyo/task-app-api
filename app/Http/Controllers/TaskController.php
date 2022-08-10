@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Enums\TaskStatus;
+use Illuminate\Validation\Rules\Enum;
 
 class TaskController extends Controller
 {
@@ -112,7 +115,29 @@ class TaskController extends Controller
      */
     public function show($id)
     {
-        //
+
+        try {
+            $user =   Auth::user();
+            $task  = Task::where("user_id", $user->id)->where("id", $id)->first();
+            if(is_null($task)){
+                return response()->json([
+                    "status"=>"fail",
+                    "message"=>"No task found"
+                ], 401);
+        }
+
+        return response()->json([
+            "status"=>"success",
+            "task"=>$task
+        ], 200);
+
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                "status"=>"fail",
+                "message"=>$th->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -135,7 +160,44 @@ class TaskController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $user  =  Auth::user();
+            $validatedTask = Validator::make($request->all(), [
+                "title"=>'required|String',
+                "description" => 'required|String',
+                "expires_at" => 'required',
+                "status"=> ['required','in:COMPLETED,TODO,PROGRESS']
+            ]);
+
+            if($validatedTask->fails()){
+                return response()->json([
+                    'status' => 'failed',
+                    'errors' => $validatedTask -> errors()
+                ], 401);
+            }
+
+            
+            $task  = Task::where("user_id", $user->id)->where("id", $id)->first();
+            // now lets update
+            $task->title = $request->title;
+            $task->description = $request->description;
+            $task->expires_at = $request->expires_at;
+            $task->status = $request->status;
+
+            $task->save();
+            return response()->json([
+                "status"=>"success",
+                "message"=>"Task updated successfully"
+            ], 200);
+
+
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                "status"=>"fail",
+                "message"=>$th->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -146,6 +208,19 @@ class TaskController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $user =   Auth::user();
+            $task =  Task::where("id", $id)->where("user_id", $user->id)->delete();
+            return response()->json([
+                "status"=>"success",
+                "message"=>"Task deleted successfully"
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                "status"=>"fail",
+                "message"=>$th->getMessage()
+            ], 500);
+        }
     }
 }
