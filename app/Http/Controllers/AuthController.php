@@ -148,10 +148,17 @@ class AuthController extends Controller
 
 
     // reset password
-    public function resetPassword(Type $var = null)
+    public function resetPassword(Request $request)
     {
         try {
             //code...
+            $validatedUser = Validator::make($request->all(), [
+                'firstName' => 'required|string',
+                'email' => 'required|email',
+                'password' => 'required|string|min:6'
+            ]); 
+
+
 
         } catch (\Throwable $th) {
             return response()->json([
